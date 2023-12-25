@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "e-comm-onion-arch-django"
+version = "0.1.0"
+description = ""
+authors = ["gitrus <gitrus@yandex.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+Django = "^5.0"
+dependency-injector = {git = "https://github.com/anton-petrov/python-dependency-injector"}
+django-ninja = "^1.1.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "~7.4.3"
+pytest-django = "~4.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
