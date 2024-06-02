@@ -9,14 +9,38 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 Django = "^5.0"
-dependency-injector = {git = "https://github.com/anton-petrov/python-dependency-injector"}
+dependency-injector = { git = "https://github.com/anton-petrov/python-dependency-injector" }
 django-ninja = "^1.1.0"
+django-prometheus = "^2.3.1"
+
 
 [tool.poetry.group.test.dependencies]
 pytest = "~7.4.3"
 pytest-django = "~4.7.0"
 
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+ruff = "^0.4.4"
+pre-commit = "^3.7.1"
+mypy = "^1.10.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+line-length = 98
+target-version = ['py312']
+
+[tool.ruff]
+line-length = 98
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["S", "I", "E4", "E7", "E9", "F", "C"]
+ignore = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
