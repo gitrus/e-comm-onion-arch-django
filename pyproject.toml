@@ -1,4 +1,4 @@
-[tool.poetry]
+[project]
 name = "e-comm-onion-arch-django"
 version = "0.1.0"
 description = ""
@@ -6,27 +6,27 @@ authors = ["gitrus <gitrus@yandex.com>"]
 license = "MIT"
 readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "^3.12"
-Django = "^5.0"
-dependency-injector = { git = "https://github.com/anton-petrov/python-dependency-injector" }
-django-ninja = "^1.1.0"
-django-prometheus = "^2.3.1"
+requires-python = ">=3.12"
+dependencies = [
+    "django-ninja>=1.3.0",
+    "django>=5.1.3",
+    "django-prometheus>=2.3.1",
+    "dependency-injector>=4.43.0",
+]
 
 
-[tool.poetry.group.test.dependencies]
-pytest = "~7.4.3"
-pytest-django = "~4.7.0"
+[dependency-groups]
+test = [
+    "pytest>=8.3.3",
+    "pytest-django>=4.9.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-black = "^24.4.2"
-ruff = "^0.4.4"
-pre-commit = "^3.7.1"
-mypy = "^1.10.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+lint = [
+    "black>=24.10.0",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.1",
+    "ruff>=0.8.0",
+]
 
 
 [tool.black]
