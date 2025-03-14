@@ -1,16 +1,16 @@
 import dataclasses
-from asyncio import iscoroutine
+from asyncio import iscoroutinefunction
 from functools import wraps
 from typing import Callable, Generator, Type
 
-from .metrics import service_execution_time_metric
 from ..common.middlewares import Middleware, MiddlewaresStack
+from .metrics import service_execution_time_metric
 
 
 @dataclasses.dataclass
 class BaseService:
     # TODO: rework it. Take/Generalize code from BaseRepository
-    error_mapping: dict[Type[Exception], Type[Exception]] = dataclasses.Field(
+    error_mapping: dict[Type[Exception], Type[Exception]] = dataclasses.field(
         default_factory=dict
     )
 
@@ -63,7 +63,7 @@ class BaseService:
     def _middleware_wrapper(cls, func: Callable, middlewares: list[Middleware]) -> Callable:
         """Wrap method with try-catching and map errors with error_mapping"""
 
-        if iscoroutine(func):
+        if iscoroutinefunction(func):
 
             @wraps(func)
             async def wrapper(*args, **kwargs):

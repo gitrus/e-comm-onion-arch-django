@@ -1,5 +1,7 @@
-from functools import partial, reduce, wraps
-from typing import Callable
+import inspect
+from functools import wraps
+from types import MethodType
+from typing import ParamSpec, TypeVar, cast
 
 from e_comm_onion_arch.domain.repositories.interface import BaseRepoInterface
 from e_comm_onion_arch.domain.repositories.metrics import (
@@ -7,53 +9,60 @@ from e_comm_onion_arch.domain.repositories.metrics import (
     repository_execution_time_metric,
 )
 
+P = ParamSpec("P")
+R = TypeVar("R")
+
 
 class BaseRepository(BaseRepoInterface):
     # TODO: rework it. Take/Generalize code from BaseService
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __new__(cls, *args, **kwargs) -> "BaseRepository":
         """ "Wrap all public methods with prometheus metrics and logger"""
-        super().__init__(*args, **kwargs)
-        for attr_name, attr in self.__class__.__dict__.items():
-            if callable(attr) and not attr_name.startswith("_"):
-                wrapped_func = reduce(
-                    lambda res, wrapper: wrapper(res),
-                    [self._logger_wrapper, self._metrics_wrapper],
-                    attr,
-                )
-                wrapped_func = partial(wrapped_func, self)
-                setattr(self, attr_name, wrapped_func)
+        instance = super().__new__(*args, **kwargs)
+        cls.__wrapper(instance)
 
-    def _metrics_wrapper(self, func: Callable) -> Callable:
+        return instance
+
+    @classmethod
+    def __wrapper(cls, instance: "BaseRepository") -> None:
+        for name, method in inspect.getmembers(instance, predicate=inspect.ismethod):
+            if name.startswith("_"):
+                continue
+
+            wrapped_method = method
+            for wrapper in [instance._logger_wrapper, instance._metrics_wrapper]:
+                wrapped_method = wrapper(wrapped_method)
+
+            # Set the wrapped method back to the instance
+            setattr(instance, name, wrapped_method)
+
+    def _metrics_wrapper(self, func: MethodType) -> MethodType:
         """Wrap method with prometheus metrics"""
 
         @wraps(func)
         def wrapper(*args, **kwargs):
             method_name = func.__name__
             repository_name = self.__class__.__name__
-            version = ""  # TODO: add version
 
-            with repository_execution_time_metric.labels(
-                repository_name, method_name, version
-            ).time():
+            with repository_execution_time_metric.labels(repository_name, method_name).time():
                 try:
                     return func(*args, **kwargs)
-                except Exception as ex:
+                except Exception as exc:
                     repository_errors_count_metric.labels(
-                        repository_name, method_name, str(ex), version
+                        repository_name, method_name, str(exc)
                     ).inc()
-                    raise ex
+                    raise exc
 
-        return wrapper
+        return cast(MethodType, wrapper)
 
-    def _logger_wrapper(self, func: Callable) -> Callable:
+    def _logger_wrapper(self, func: MethodType) -> MethodType:
         """Wrap method with logger"""
 
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except Exception as ex:
-                raise ex
+            except Exception as exc:
+                raise exc
 
-        return wrapper
+        return cast(MethodType, wrapper)
