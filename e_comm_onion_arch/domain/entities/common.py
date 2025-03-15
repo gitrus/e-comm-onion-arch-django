@@ -1,17 +1,8 @@
 from decimal import Decimal
-from enum import Enum
-from typing import Annotated, TypeVar
+from typing import Annotated, TypeAlias
 
 from pydantic import Field
 
-T = TypeVar("T", bound=str)
+PositiveDecimal: TypeAlias = Annotated[Decimal, Field(..., gt=0, decimal_places=8)]
 
-
-class AutoName(str, Enum):
-    @staticmethod
-    def _generate_next_value_(name: T, start, count, last_values) -> T:
-        """enum auto-value = enum member name"""
-        return name
-
-
-PositiveDecimal = Annotated[Decimal, Field(..., gt=0, decimal_places=8)]
+PositiveInt: TypeAlias = Annotated[int, Field(..., gt=0)]
