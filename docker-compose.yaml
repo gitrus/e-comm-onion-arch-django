@@ -5,11 +5,22 @@ services:
       dockerfile: Dockerfile
     container_name: app
     command: run_app
+    environment:
+      POSTGRES_USER: ${MAIN_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${MAIN_DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${MAIN_DB_PASSWORD:-app_db}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    env_file:
+      - .env
+    depends_on:
+      - db
     networks:
       - app-network
+      - db-network
 
   db:
-    image: postgres:17.3
+    image: postgres:17.4-bookworm
     container_name: db
     environment:
       POSTGRES_USER: ${MAIN_DB_USER:-postgres}
@@ -20,11 +31,24 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     networks:
-     - app-network
+     - db-network
+
+  nginx:
+    image: nginx:1.27.4-bookworm-otel
+    container_name: nginx
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./deployments/nginx/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - app-network
 
 volumes:
     db-data:
 
 networks:
     app-network:
+        driver: bridge
+
+    db-network:
         driver: bridge

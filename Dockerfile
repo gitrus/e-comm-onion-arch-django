@@ -49,6 +49,6 @@ COPY --chown=${USER}:${USER} . ${PROJECT_ROOT}
 
 USER ${USER}
 
-ENTRYPOINT ["./manage.py"]
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
 EXPOSE ${PORT}
